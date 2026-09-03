@@ -699,7 +699,44 @@
     ctx.restore();
   }
 
-  async function downloadPNG() {
+  function fileStamp() {
+    const now = new Date();
+    const pad = (n) => String(n).padStart(2, "0");
+    return `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}${pad(now.getHours())}${pad(now.getMinutes())}`;
+  }
+
+  function canvasPngBlob(canvas) {
+    const dataUrl = canvas.toDataURL("image/png");
+    const comma = dataUrl.indexOf(",");
+    const binary = atob(dataUrl.slice(comma + 1));
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
+    return new Blob([bytes], { type: "image/png" });
+  }
+
+  function triggerDownload(blob, filename) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    a.rel = "noopener";
+    a.style.display = "none";
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+      a.remove();
+      URL.revokeObjectURL(url);
+    }, 2000);
+  }
+
+  function readyAsset(img, selector) {
+    const el = document.querySelector(selector);
+    if (el instanceof HTMLImageElement && el.complete && el.naturalWidth) return el;
+    if (img.complete && img.naturalWidth) return img;
+    return null;
+  }
+
+  function renderPrintCanvas(withChrome) {
     const { w: wIn, h: hIn } = canvasInches();
     const dpi = state.dpi;
     const width = Math.round(wIn * dpi);
@@ -711,22 +748,14 @@
     ctx.fillStyle = state.bg;
     ctx.fillRect(0, 0, width, height);
 
-    const backgroundOk =
-      (backgroundImage.complete && backgroundImage.naturalWidth > 0) || (await backgroundReady);
-    if (backgroundOk && backgroundImage.naturalWidth) {
-      ctx.drawImage(backgroundImage, 0, 0, width, height);
+    if (withChrome) {
+      const bg = readyAsset(backgroundImage, ".sheet-background");
+      if (bg) ctx.drawImage(bg, 0, 0, width, height);
     }
 
     for (const photo of state.photos) {
-      const id = photo.id;
-      const img = images.get(id);
-      if (!photo.src || !img) continue;
-      if (!img.complete) {
-        await new Promise((resolve, reject) => {
-          img.onload = resolve;
-          img.onerror = reject;
-        }).catch(() => {});
-      }
+      const img = images.get(photo.id);
+      if (!photo.src || !img?.complete) continue;
       const x = (photo.x / 100) * width;
       const y = (photo.y / 100) * height;
       const w = (photo.w / 100) * width;
@@ -734,23 +763,31 @@
       drawCover(ctx, photo, img, x, y, w, h);
     }
 
-    const overlayOk =
-      (overlayImage.complete && overlayImage.naturalWidth > 0) || (await overlayReady);
-    if (overlayOk && overlayImage.naturalWidth) {
-      ctx.drawImage(overlayImage, 0, 0, width, height);
+    if (withChrome) {
+      const overlay = readyAsset(overlayImage, ".sheet-overlay");
+      if (overlay) ctx.drawImage(overlay, 0, 0, width, height);
     }
 
-    const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
-    if (!blob) {
-      toast(t("exportFail"));
-      return;
+    return canvas;
+  }
+
+  function downloadPNG() {
+    const filename = `meowMe-${fileStamp()}.png`;
+    let canvas = renderPrintCanvas(true);
+    let blob;
+    try {
+      blob = canvasPngBlob(canvas);
+    } catch {
+      canvas = renderPrintCanvas(false);
+      try {
+        blob = canvasPngBlob(canvas);
+      } catch {
+        toast(t("exportFail"));
+        return;
+      }
     }
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = `4x6-sheet-portrait-${dpi}dpi.png`;
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(a.href), 1500);
-    toast(t("savedPng", width, height));
+    triggerDownload(blob, filename);
+    toast(t("savedPng", canvas.width, canvas.height));
   }
 
   function escapeAttr(value) {
@@ -781,8 +818,13 @@
   }
 
   // Events
-  document.getElementById("btn-download").addEventListener("click", () => {
-    downloadPNG();
+  document.getElementById("btn-download").addEventListener("click", (event) => {
+    event.preventDefault();
+    try {
+      downloadPNG();
+    } catch {
+      toast(t("exportFail"));
+    }
   });
 
   document.getElementById("btn-print").addEventListener("click", () => {
@@ -921,7 +963,11 @@
     const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(event.target.tagName);
     if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "s") {
       event.preventDefault();
-      downloadPNG();
+      try {
+        downloadPNG();
+      } catch {
+        toast(t("exportFail"));
+      }
       return;
     }
     if (typing) return;
