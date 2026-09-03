@@ -713,6 +713,7 @@ input[type="range"]::-webkit-slider-thumb {
 .sheet-wrap {
   position: relative;
   min-width: 0;
+  pointer-events: none;
 }
 
 .sheet {
@@ -724,6 +725,7 @@ input[type="range"]::-webkit-slider-thumb {
   cursor: default;
   min-width: 0;
   z-index: 1;
+  pointer-events: auto;
 }
 
 .sheet-background,
@@ -757,6 +759,7 @@ input[type="range"]::-webkit-slider-thumb {
 .photo.is-empty {
   background: transparent;
   cursor: pointer;
+  touch-action: manipulation;
 }
 
 .photo.is-on {
@@ -873,6 +876,16 @@ input[type="range"]::-webkit-slider-thumb {
 
 .photo.is-resizing {
   cursor: nwse-resize;
+}
+
+.file-input {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  overflow: hidden;
 }
 
 .status {

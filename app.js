@@ -825,9 +825,9 @@
   });
 
   el.sheet.addEventListener("pointerdown", (event) => {
-    event.preventDefault();
     const node = event.target.closest(".photo");
     if (!node) {
+      event.preventDefault();
       state.selectedId = null;
       renderInspector();
       renderMeta();
@@ -838,15 +838,25 @@
     const photo = state.photos[id];
     selectPhoto(id);
     if (!photo.src) {
-      openFilePicker(id);
+      uploadTarget = id;
       return;
     }
+    event.preventDefault();
     if (event.target.closest(".handle")) {
       startResize(id, event);
     } else {
       startPan(id, event);
     }
     el.sheet.setPointerCapture(event.pointerId);
+  });
+
+  el.sheet.addEventListener("click", (event) => {
+    const node = event.target.closest(".photo");
+    if (!node) return;
+    const id = Number(node.dataset.id);
+    const photo = state.photos[id];
+    if (photo?.src) return;
+    openFilePicker(id);
   });
 
   el.sheet.addEventListener("pointermove", onPointerMove);
