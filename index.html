@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      try {
+        var theme = localStorage.getItem("photoResize.theme");
+        if (theme !== "light" && theme !== "dark") {
+          theme = matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+        }
+        document.documentElement.dataset.theme = theme;
+      } catch (e) {}
+    </script>
+    <title>4×6 Sheet — Nine-up photo collage</title>
+    <meta
+      name="description"
+      content="Lay out nine photos on a portrait 4×6 inch print. Upload, move, and resize each image, then download a 300 DPI file ready for the lab."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,560&family=Noto+Sans+TC:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23141416'/%3E%3Crect x='6' y='9' width='20' height='14' rx='1.5' fill='%23fffcf7'/%3E%3Crect x='8' y='11' width='5.2' height='4.4' fill='%23d4a574'/%3E%3Crect x='13.8' y='11' width='5.2' height='4.4' fill='%237eb8c9'/%3E%3Crect x='19.6' y='11' width='4.4' height='4.4' fill='%23e07a5f'/%3E%3Crect x='8' y='16.2' width='5.2' height='4.6' fill='%239b8ec4'/%3E%3Crect x='13.8' y='16.2' width='5.2' height='4.6' fill='%237aad7a'/%3E%3Crect x='19.6' y='16.2' width='4.4' height='4.6' fill='%23c9a227'/%3E%3C/svg%3E" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="is-portrait">
+    <div class="app">
+      <header class="topbar">
+        <div class="brand">
+          <!-- <span class="brand-mark" aria-hidden="true"></span> -->
+          <div>
+            <h1 data-i18n="brandTitle">4×6 Sheet</h1>
+            <p data-i18n="brandTagline">Nine photos on a 4×6 portrait</p>
+          </div>
+        </div>
+
+        <div class="topbar-meta" id="print-meta" aria-live="polite"></div>
+
+        <div class="topbar-actions">
+          <button type="button" class="btn ghost" id="btn-print" data-i18n="print">Print</button>
+          <button type="button" class="btn primary" id="btn-download" data-i18n="download">
+            Download PNG
+          </button>
+          <button
+            type="button"
+            class="btn ghost lang"
+            id="btn-lang"
+            aria-label="Switch to Traditional Chinese"
+            title="繁體中文"
+          >
+            繁
+          </button>
+          <button
+            type="button"
+            class="btn ghost theme"
+            id="btn-theme"
+            aria-label="Switch to light theme"
+            title="Light theme"
+          >
+            <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="12" cy="12" r="4" />
+              <path d="M12 3v1.5M12 19.5V21M4.2 4.2l1.1 1.1M18.7 18.7l1.1 1.1M3 12h1.5M19.5 12H21M4.2 19.8l1.1-1.1M18.7 5.3l1.1-1.1" />
+            </svg>
+            <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M20 14.5A8.5 8.5 0 1 1 9.5 4 7 7 0 0 0 20 14.5z" />
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      <aside class="sidebar" data-i18n-aria="guideKicker" aria-label="User guide">
+        <div class="guide">
+          <p class="guide-kicker" data-i18n="guideKicker">User guide</p>
+          <h2 data-i18n="guideTitle">Make a 4×6 nine-up print</h2>
+          <p class="guide-lead" data-i18n="guideLead">
+            This page lays out nine photos on one portrait 4×6 inch sheet.
+            The frames stay locked in a 3×3 grid with no gaps. You only move
+            and resize the picture inside each frame.
+          </p>
+
+          <section>
+            <h3 data-i18n="guideAddTitle">1. Add photos</h3>
+            <ul>
+              <li data-i18n="guideAdd1">Click an empty slot to choose one image.</li>
+              <li data-i18n="guideAdd2">Drop up to nine files onto the print at once.</li>
+            </ul>
+          </section>
+
+          <section>
+            <h3 data-i18n="guideMoveTitle">2. Move a photo</h3>
+            <ul>
+              <li data-i18n="guideMove1">Click the photo you want to edit.</li>
+              <li data-i18n="guideMove2">Drag in any direction — left, right, up, or down.</li>
+              <li data-i18n="guideMove3">The frame stays put; only the image inside it moves.</li>
+            </ul>
+          </section>
+
+          <section>
+            <h3 data-i18n="guideResizeTitle">3. Resize a photo</h3>
+            <ul>
+              <li data-i18n="guideResize1">Click a photo so crop brackets appear on its corners.</li>
+              <li data-i18n="guideResize2">Pull a corner to zoom that patch in or out.</li>
+              <li data-i18n="guideResize3">Scroll the mouse wheel over the photo to resize it.</li>
+              <li data-i18n-html="guideResize4">Use <strong>−</strong> / <strong>+</strong> when a photo is selected.</li>
+            </ul>
+          </section>
+
+          <section>
+            <h3 data-i18n="guideReplaceTitle">4. Replace or remove</h3>
+            <ul>
+              <li data-i18n-html="guideReplace1"><strong>Replace</strong> swaps the selected photo.</li>
+              <li data-i18n-html="guideReplace2"><strong>Clear</strong> or <kbd>Delete</kbd> empties that slot.</li>
+              <li data-i18n="guideReplace3">Double-click a photo to reset its crop.</li>
+            </ul>
+          </section>
+
+          <section>
+            <h3 data-i18n="guideSaveTitle">5. Save the print</h3>
+            <ul>
+              <li data-i18n-html="guideSave1"><strong>Download PNG</strong> saves a 4×6 file at 300 DPI (1200 × 1800 px) for a photo lab.</li>
+              <li data-i18n-html="guideSave2"><strong>Print</strong> sends the sheet to your printer at 4×6 inches.</li>
+            </ul>
+          </section>
+
+          <section>
+            <h3 data-i18n="guideKeysTitle">Shortcuts</h3>
+            <dl class="guide-keys">
+              <div><dt><kbd>1</kbd>–<kbd>9</kbd></dt><dd data-i18n="keysSelect">Select a slot</dd></div>
+              <div><dt data-i18n="keysArrows">Arrow keys</dt><dd data-i18n="keysNudge">Nudge the photo</dd></div>
+              <div><dt><kbd>Delete</kbd></dt><dd data-i18n="keysClear">Clear the selected slot</dd></div>
+              <div><dt><kbd>Esc</kbd></dt><dd data-i18n="keysDeselect">Deselect</dd></div>
+            </dl>
+          </section>
+        </div>
+      </aside>
+
+      <main class="workspace">
+        <div class="stage" id="stage">
+          <div class="stage-frame" id="stage-frame">
+            <div class="ruler-corner" aria-hidden="true"></div>
+            <div class="ruler ruler-h" id="ruler-h" aria-hidden="true"></div>
+            <div class="ruler ruler-v" id="ruler-v" aria-hidden="true"></div>
+            <div class="sheet-wrap">
+              <img
+                class="sheet-background"
+                src="background/background.png"
+                alt=""
+                aria-hidden="true"
+                draggable="false"
+              />
+              <div
+                class="sheet portrait"
+                id="sheet"
+                role="application"
+                data-i18n-aria="sheetAria"
+                aria-label="4 by 6 inch portrait print canvas"
+              ></div>
+              <img
+                class="sheet-overlay"
+                src="overlay/overlay.png"
+                alt=""
+                aria-hidden="true"
+                draggable="false"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="photo-tools" id="inspector-body" hidden>
+          <div class="btn-row">
+            <button type="button" class="btn ghost grow" id="btn-zoom-out" data-i18n-aria="smaller" aria-label="Smaller">−</button>
+            <button type="button" class="btn ghost grow" id="btn-zoom-in" data-i18n-aria="larger" aria-label="Larger">+</button>
+            <button type="button" class="btn ghost grow" id="btn-reset-crop" data-i18n="reset">Reset</button>
+            <button type="button" class="btn ghost grow" id="btn-replace" data-i18n="replace">Replace</button>
+            <button type="button" class="btn ghost grow" id="btn-clear" data-i18n="clear">Clear</button>
+          </div>
+        </div>
+        <p class="status" id="status" data-i18n="statusIdle">
+          Click a photo to add or edit it · Drag to move · Pull a corner to resize
+        </p>
+      </main>
+    </div>
+
+    <input id="input-single" type="file" accept="image/*" hidden />
+
+    <div class="toast" id="toast" role="status" hidden></div>
+    <div class="drop-veil" id="drop-veil" hidden>
+      <p data-i18n="dropVeil">Drop images onto the print</p>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
