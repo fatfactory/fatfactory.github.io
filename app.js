@@ -17,12 +17,12 @@
       background: "background/halloween.png",
       overlay: "overlay/halloween.png",
       frameCount: 4,
-      photoShape: "oval",
+      controlsAboveOverlay: true,
       frames: [
-        { x: 11.75, y: 22.5556, w: 36.25, h: 17.9444 },
-        { x: 51.1667, y: 22.5556, w: 36.25, h: 17.9444 },
-        { x: 11.75, y: 61.9444, w: 36.25, h: 17.9444 },
-        { x: 51.1667, y: 61.9444, w: 36.25, h: 17.9444 },
+        { x: 10, y: 10.5556, w: 39.375, h: 39.4444 },
+        { x: 49.375, y: 10.5556, w: 39.375, h: 39.4444 },
+        { x: 10, y: 50, w: 39.375, h: 39.4444 },
+        { x: 49.375, y: 50, w: 39.375, h: 39.4444 },
       ],
     },
     {
@@ -60,12 +60,16 @@
       guideKicker: "User guide",
       guideTitle: () => `Make a 4×6 ${frameUpLabel()} print`,
       guideLead:
-        () => `This page lays out ${activeFrameCount()} photos on one portrait 4×6 inch sheet. Choose a print style first, then the photo areas stay locked to the selected design. You only move and resize the picture inside each frame.`,
+        () => isHalloween()
+          ? "The Halloween style lets you replace the four cat photos on the 4×6 sheet. Click a cat image, upload your photo, then move and resize it inside that same area."
+          : "This page lays out nine photos on one portrait 4×6 inch sheet. Choose a print style first, then the frames stay locked in a 3×3 grid with no gaps. You only move and resize the picture inside each frame.",
       guideStyleTitle: "1. Choose a style",
       guideStyle1: "Pick a print style. The background and oval frame change together.",
       guideStyle2: "Use Change style in the top bar to pick a different one.",
       guideAddTitle: "2. Add photos",
-      guideAdd1: "Click an empty slot to choose one image.",
+      guideAdd1: () => isHalloween()
+        ? "Click one of the four cat photos to replace it with your image."
+        : "Click an empty slot to choose one image.",
       guideAdd2: () => `Drop up to ${activeFrameCount()} files onto the print at once.`,
       guideMoveTitle: "3. Move a photo",
       guideMove1: "Click the photo you want to edit.",
@@ -140,12 +144,16 @@
       guideKicker: "使用說明",
       guideTitle: () => `製作 4x6 4R${frameLayoutLabelZh()}相片`,
       guideLead:
-        () => `本頁會把${frameCountLabelZh()}張照片排在一張直式 4×6 吋 4R相紙上。請先選擇款式，照片區域會依照所選設計固定位置，你只需移動並縮放每格裡的圖片。`,
+        () => isHalloween()
+          ? "萬聖節款式可替換 4×6 相紙上的四張貓照片。點選其中一張貓照片，上傳你的圖片，再在同一個位置內移動與縮放。"
+          : "本頁會把九張照片排在一張直式 4×6 吋 4R相紙上。請先選擇款式，外框固定為無縫 3×3 格，你只需移動並縮放每格裡的圖片。",
       guideStyleTitle: "1. 選擇款式",
       guideStyle1: "選擇相片款式。背景與橢圓外框會一起更換。",
       guideStyle2: "之後可用頂端的「更換款式」改選其他款。",
       guideAddTitle: "2. 加入照片",
-      guideAdd1: "點選空格來選擇一張圖片。",
+      guideAdd1: () => isHalloween()
+        ? "點選四張貓照片中的其中一張，替換成你的圖片。"
+        : "點選空格來選擇一張圖片。",
       guideAdd2: () => `一次可將最多${frameCountLabelZh()}個檔案拖放到相紙上。`,
       guideMoveTitle: "3. 移動照片",
       guideMove1: "點選要編輯的照片。",
@@ -357,6 +365,10 @@
     return findTheme(state.styleId);
   }
 
+  function isHalloween() {
+    return activeTheme()?.id === "halloween";
+  }
+
   function activeFrameCount() {
     return activeTheme()?.frameCount ?? COUNT;
   }
@@ -367,6 +379,10 @@
 
   function activePhotoShape() {
     return activeTheme()?.photoShape ?? "rect";
+  }
+
+  function controlsAboveOverlay() {
+    return Boolean(activeTheme()?.controlsAboveOverlay);
   }
 
   function frameCountLabel() {
@@ -823,10 +839,11 @@
       .map((photo) => {
         const on = photo.id === state.selectedId ? " is-on" : "";
         const empty = photo.src ? "" : " is-empty";
+        const elevatedControls = controlsAboveOverlay();
         const shape = activePhotoShape() === "oval" ? " is-oval" : "";
         const media = photo.src
           ? `<div class="photo-media"><img alt="" draggable="false" /></div>
-          ${activePhotoShape() === "oval" ? "" : `
+          ${elevatedControls ? "" : `
           <div class="handles">
             <i class="handle nw" data-dir="nw"></i>
             <i class="handle ne" data-dir="ne"></i>
@@ -846,7 +863,7 @@
 
   function renderSheetControls() {
     if (!el.sheetControls) return;
-    if (activePhotoShape() !== "oval") {
+    if (!controlsAboveOverlay()) {
       el.sheetControls.innerHTML = "";
       return;
     }
@@ -855,7 +872,8 @@
       el.sheetControls.innerHTML = "";
       return;
     }
-    el.sheetControls.innerHTML = `<div class="photo-controls is-oval" data-id="${photo.id}" style="left:${photo.x}%;top:${photo.y}%;width:${photo.w}%;height:${photo.h}%;">
+    const shape = activePhotoShape() === "oval" ? " is-oval" : "";
+    el.sheetControls.innerHTML = `<div class="photo-controls${shape}" data-id="${photo.id}" style="left:${photo.x}%;top:${photo.y}%;width:${photo.w}%;height:${photo.h}%;">
       <div class="handles">
         <i class="handle nw" data-dir="nw"></i>
         <i class="handle ne" data-dir="ne"></i>
