@@ -560,6 +560,7 @@ input[type="range"]::-webkit-slider-thumb {
 
 .btn-row {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   margin-top: 8px;
 }
@@ -898,6 +899,10 @@ input[type="range"]::-webkit-slider-thumb {
   cursor: grab;
 }
 
+.photo.is-on:not(.is-empty) {
+  overflow: visible;
+}
+
 .photo.is-dragging {
   cursor: grabbing;
 }
@@ -911,6 +916,7 @@ input[type="range"]::-webkit-slider-thumb {
 .photo-media img {
   position: absolute;
   max-width: none;
+  transform-origin: center center;
   pointer-events: none;
   -webkit-user-drag: none;
 }
@@ -998,21 +1004,59 @@ input[type="range"]::-webkit-slider-thumb {
 .handle.ne { right: 7px; top: 7px; cursor: nesw-resize; }
 .handle.sw { left: 7px; bottom: 7px; cursor: nesw-resize; }
 .handle.se { right: 7px; bottom: 7px; cursor: nwse-resize; }
+.handle.rotate {
+  left: 50%;
+  top: -34px;
+  transform: translateX(-50%);
+  cursor: grab;
+}
 
 .handle.nw::before { border-right: 0; border-bottom: 0; top: 0; left: 0; }
 .handle.ne::before { border-left: 0; border-bottom: 0; top: 0; right: 0; }
 .handle.sw::before { border-right: 0; border-top: 0; bottom: 0; left: 0; }
 .handle.se::before { border-left: 0; border-top: 0; bottom: 0; right: 0; }
+.handle.rotate::before {
+  width: 14px;
+  height: 14px;
+  left: 2px;
+  top: 2px;
+  border: 3px solid #f4f1ea;
+  border-radius: 50%;
+  background: var(--select);
+}
+
+.handle.rotate::after {
+  inset: -12px;
+}
+
+.handles::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -16px;
+  width: 1px;
+  height: 24px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 0 0 1px rgba(18, 18, 20, 0.35);
+  pointer-events: none;
+}
 
 .photo.is-on .handle:hover::before,
 .photo.is-resizing .handle::before,
+.photo.is-rotating .handle.rotate::before,
 .photo-controls .handle:hover::before,
-.photo-controls.is-resizing .handle::before {
+.photo-controls.is-resizing .handle::before,
+.photo-controls.is-rotating .handle.rotate::before {
   border-color: var(--select);
 }
 
 .photo.is-resizing {
   cursor: nwse-resize;
+}
+
+.photo.is-rotating,
+.photo-controls.is-rotating .handle.rotate {
+  cursor: grabbing;
 }
 
 .photo-controls {

@@ -79,7 +79,7 @@
       guideResize1: "Click a photo so crop brackets appear on its corners.",
       guideResize2: "Pull a corner to zoom that patch in or out.",
       guideResize3: "Scroll the mouse wheel over the photo to resize it.",
-      guideResize4: "Use <strong>−</strong> / <strong>+</strong> when a photo is selected.",
+      guideResize4: "Drag the dot above the frame to rotate, or use <strong>Rotate</strong> to turn the photo 90°.",
       guideReplaceTitle: "5. Replace or remove",
       guideReplace1: "<strong>Replace</strong> swaps the selected photo.",
       guideClone1: "<strong>Clone</strong> duplicates it into the next empty frame.",
@@ -96,6 +96,7 @@
       keysDeselect: "Deselect",
       smaller: "Smaller",
       larger: "Larger",
+      rotate: "Rotate",
       reset: "Reset",
       replace: "Replace",
       clone: "Clone",
@@ -163,7 +164,7 @@
       guideResize1: "點選照片，角落會出現裁切框。",
       guideResize2: "拉動角落可放大或縮小該區塊。",
       guideResize3: "在照片上滾動滑鼠滾輪來縮放。",
-      guideResize4: "選取照片後，可用<strong>−</strong> / <strong>+</strong>調整。",
+      guideResize4: "拖曳外框上方的圓點可旋轉照片，或按<strong>旋轉</strong>將照片旋轉 90°。",
       guideReplaceTitle: "5. 更換或移除",
       guideReplace1: "<strong>更換</strong>可替換目前選取的照片。",
       guideClone1: "<strong>複製</strong>會把目前照片複製到下一個空格。",
@@ -180,6 +181,7 @@
       keysDeselect: "取消選取",
       smaller: "縮小",
       larger: "放大",
+      rotate: "旋轉",
       reset: "重設",
       replace: "更換",
       clone: "複製",
@@ -350,6 +352,7 @@
       w: 30,
       h: 30,
       zoom: 1,
+      rotation: 0,
       panX: 0.5,
       panY: 0.5,
       nw: 0,
@@ -609,18 +612,29 @@
 
   function imageLayout(photo, frameW, frameH) {
     if (!photo.src || !photo.nw || !photo.nh) return null;
-    const scale = Math.max(frameW / photo.nw, frameH / photo.nh) * photo.zoom;
-    const dw = photo.nw * scale;
-    const dh = photo.nh * scale;
-    const maxPanX = Math.max(0, dw - frameW);
-    const maxPanY = Math.max(0, dh - frameH);
-    const left = maxPanX ? -clamp(photo.panX, 0, 1) * maxPanX : (frameW - dw) / 2;
-    const top = maxPanY ? -clamp(photo.panY, 0, 1) * maxPanY : (frameH - dh) / 2;
+    const rotation = (((photo.rotation || 0) % 360) + 360) % 360;
+    const turnsSideways = rotation === 90 || rotation === 270;
+    const coverW = turnsSideways ? photo.nh : photo.nw;
+    const coverH = turnsSideways ? photo.nw : photo.nh;
+    const scale = Math.max(frameW / coverW, frameH / coverH) * photo.zoom;
+    const imageW = photo.nw * scale;
+    const imageH = photo.nh * scale;
+    const boxW = coverW * scale;
+    const boxH = coverH * scale;
+    const maxPanX = Math.max(0, boxW - frameW);
+    const maxPanY = Math.max(0, boxH - frameH);
+    const boxLeft = maxPanX ? -clamp(photo.panX, 0, 1) * maxPanX : (frameW - boxW) / 2;
+    const boxTop = maxPanY ? -clamp(photo.panY, 0, 1) * maxPanY : (frameH - boxH) / 2;
     return {
-      width: dw,
-      height: dh,
-      left,
-      top,
+      width: imageW,
+      height: imageH,
+      left: boxLeft + (boxW - imageW) / 2,
+      top: boxTop + (boxH - imageH) / 2,
+      boxWidth: boxW,
+      boxHeight: boxH,
+      boxLeft,
+      boxTop,
+      rotation,
       maxPanX,
       maxPanY,
     };
@@ -634,9 +648,13 @@
   function ensureTwoAxisPan(photo) {
     const { w, h } = frameSize(photo);
     if (!w || !h) return;
-    const cover = Math.max(w / photo.nw, h / photo.nh);
+    const rotation = (((photo.rotation || 0) % 360) + 360) % 360;
+    const turnsSideways = rotation === 90 || rotation === 270;
+    const coverW = turnsSideways ? photo.nh : photo.nw;
+    const coverH = turnsSideways ? photo.nw : photo.nh;
+    const cover = Math.max(w / coverW, h / coverH);
     const room = 40;
-    const need = Math.max((w + room) / (photo.nw * cover), (h + room) / (photo.nh * cover), 1);
+    const need = Math.max((w + room) / (coverW * cover), (h + room) / (coverH * cover), 1);
     if (photo.zoom < need) photo.zoom = need;
   }
 
@@ -648,13 +666,13 @@
       photo.zoom = nextZoom;
       return;
     }
-    const fx = focus ? (focus.x - prev.left) / prev.width : 0.5;
-    const fy = focus ? (focus.y - prev.top) / prev.height : 0.5;
+    const fx = focus ? (focus.x - prev.boxLeft) / prev.boxWidth : 0.5;
+    const fy = focus ? (focus.y - prev.boxTop) / prev.boxHeight : 0.5;
     photo.zoom = nextZoom;
     const next = imageLayout(photo, frameW, frameH);
     if (!next) return;
-    const left = (focus ? focus.x : frameW / 2) - fx * next.width;
-    const top = (focus ? focus.y : frameH / 2) - fy * next.height;
+    const left = (focus ? focus.x : frameW / 2) - fx * next.boxWidth;
+    const top = (focus ? focus.y : frameH / 2) - fy * next.boxHeight;
     setPanFromOffset(photo, next, left, top);
   }
 
@@ -696,6 +714,7 @@
         photo.nw = img.naturalWidth;
         photo.nh = img.naturalHeight;
         photo.zoom = 1;
+        photo.rotation = 0;
         photo.panX = 0.5;
         photo.panY = 0.5;
         images.set(id, img);
@@ -767,6 +786,7 @@
     dest.nw = from.nw;
     dest.nh = from.nh;
     dest.zoom = from.zoom;
+    dest.rotation = from.rotation;
     dest.panX = from.panX;
     dest.panY = from.panY;
     images.set(toId, img);
@@ -849,6 +869,7 @@
             <i class="handle ne" data-dir="ne"></i>
             <i class="handle sw" data-dir="sw"></i>
             <i class="handle se" data-dir="se"></i>
+            <i class="handle rotate" data-dir="rotate" aria-hidden="true"></i>
           </div>`}`
           : `<div class="photo-empty"><div><strong>+</strong><span>${t("addPhoto")}</span></div></div>`;
         return `<div class="photo${on}${empty}${shape}" data-id="${photo.id}" style="left:${photo.x}%;top:${photo.y}%;width:${photo.w}%;height:${photo.h}%;">
@@ -879,6 +900,7 @@
         <i class="handle ne" data-dir="ne"></i>
         <i class="handle sw" data-dir="sw"></i>
         <i class="handle se" data-dir="se"></i>
+        <i class="handle rotate" data-dir="rotate" aria-hidden="true"></i>
       </div>
     </div>`;
   }
@@ -899,6 +921,7 @@
       node.style.height = `${layout.height}px`;
       node.style.left = `${layout.left}px`;
       node.style.top = `${layout.top}px`;
+      node.style.transform = `rotate(${layout.rotation}deg)`;
     });
   }
 
@@ -962,8 +985,8 @@
       id,
       startX: event.clientX,
       startY: event.clientY,
-      origLeft: layout ? layout.left : 0,
-      origTop: layout ? layout.top : 0,
+      origLeft: layout ? layout.boxLeft : 0,
+      origTop: layout ? layout.boxTop : 0,
       unlocked: false,
     };
     el.sheet.querySelector(`.photo[data-id="${id}"]`)?.classList.add("is-dragging");
@@ -987,6 +1010,28 @@
     el.sheetControls?.querySelector(".photo-controls")?.classList.add("is-resizing");
   }
 
+  function pointerAngle(cx, cy, event) {
+    return (Math.atan2(event.clientY - cy, event.clientX - cx) * 180) / Math.PI;
+  }
+
+  function startRotate(id, event) {
+    const photo = state.photos[id];
+    const node = el.sheet.querySelector(`.photo[data-id="${id}"]`);
+    const box = node.getBoundingClientRect();
+    const cx = box.left + box.width / 2;
+    const cy = box.top + box.height / 2;
+    drag = {
+      type: "rotate",
+      id,
+      cx,
+      cy,
+      startAngle: pointerAngle(cx, cy, event),
+      origRotation: photo.rotation || 0,
+    };
+    node.classList.add("is-rotating");
+    el.sheetControls?.querySelector(".photo-controls")?.classList.add("is-rotating");
+  }
+
   function onPointerMove(event) {
     if (!drag) return;
     const photo = state.photos[drag.id];
@@ -1000,14 +1045,22 @@
       return;
     }
 
+    if (drag.type === "rotate") {
+      const angle = pointerAngle(drag.cx, drag.cy, event);
+      photo.rotation = drag.origRotation + angle - drag.startAngle;
+      layoutImages();
+      renderInspector();
+      return;
+    }
+
     if (!drag.unlocked) {
       const dist = Math.abs(event.clientX - drag.startX) + Math.abs(event.clientY - drag.startY);
       if (dist < 4) return;
       ensureTwoAxisPan(photo);
       const primed = imageLayout(photo, frameW, frameH);
       if (primed) {
-        drag.origLeft = primed.left - (event.clientX - drag.startX);
-        drag.origTop = primed.top - (event.clientY - drag.startY);
+        drag.origLeft = primed.boxLeft - (event.clientX - drag.startX);
+        drag.origTop = primed.boxTop - (event.clientY - drag.startY);
       }
       drag.unlocked = true;
       renderInspector();
@@ -1024,8 +1077,8 @@
   function endDrag() {
     if (!drag) return;
     const node = el.sheet.querySelector(`.photo[data-id="${drag.id}"]`);
-    node?.classList.remove("is-dragging", "is-resizing");
-    el.sheetControls?.querySelector(".photo-controls")?.classList.remove("is-resizing");
+    node?.classList.remove("is-dragging", "is-resizing", "is-rotating");
+    el.sheetControls?.querySelector(".photo-controls")?.classList.remove("is-resizing", "is-rotating");
     drag = null;
     renderInspector();
     renderMeta();
@@ -1048,7 +1101,9 @@
       ctx.rect(x, y, w, h);
     }
     ctx.clip();
-    ctx.drawImage(img, x + layout.left, y + layout.top, layout.width, layout.height);
+    ctx.translate(x + layout.left + layout.width / 2, y + layout.top + layout.height / 2);
+    ctx.rotate((layout.rotation * Math.PI) / 180);
+    ctx.drawImage(img, -layout.width / 2, -layout.height / 2, layout.width, layout.height);
     ctx.restore();
   }
 
@@ -1168,6 +1223,17 @@
 
   function resetCrop(photo) {
     photo.zoom = 1;
+    photo.rotation = 0;
+    photo.panX = 0.5;
+    photo.panY = 0.5;
+    layoutImages();
+    renderInspector();
+  }
+
+  function rotateSelectedPhoto() {
+    const photo = selected();
+    if (!photo?.src) return;
+    photo.rotation = ((photo.rotation || 0) + 90) % 360;
     photo.panX = 0.5;
     photo.panY = 0.5;
     layoutImages();
@@ -1238,6 +1304,10 @@
     resetCrop(photo);
   });
 
+  document.getElementById("btn-rotate").addEventListener("click", () => {
+    rotateSelectedPhoto();
+  });
+
   window.addEventListener("beforeprint", () => {
     let tag = document.getElementById("print-page-size");
     if (!tag) {
@@ -1267,7 +1337,10 @@
       return;
     }
     event.preventDefault();
-    if (event.target.closest(".handle")) {
+    const handle = event.target.closest(".handle");
+    if (handle?.dataset.dir === "rotate") {
+      startRotate(id, event);
+    } else if (handle) {
       startResize(id, event);
     } else {
       startPan(id, event);
@@ -1295,7 +1368,11 @@
     event.preventDefault();
     const id = Number(node.dataset.id);
     selectPhoto(id);
-    startResize(id, event);
+    if (handle.dataset.dir === "rotate") {
+      startRotate(id, event);
+    } else {
+      startResize(id, event);
+    }
     el.sheetControls.setPointerCapture(event.pointerId);
   });
   el.sheetControls?.addEventListener("pointermove", onPointerMove);
