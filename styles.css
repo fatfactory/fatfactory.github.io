@@ -859,6 +859,13 @@ input[type="range"]::-webkit-slider-thumb {
   z-index: 30;
 }
 
+.sheet-controls {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  pointer-events: none;
+}
+
 .photo {
   position: absolute;
   overflow: hidden;
@@ -871,6 +878,16 @@ input[type="range"]::-webkit-slider-thumb {
   background: transparent;
   cursor: pointer;
   touch-action: manipulation;
+}
+
+.photo.is-oval {
+  overflow: visible;
+  border-radius: 50%;
+}
+
+.photo.is-oval .photo-media,
+.photo.is-oval .photo-empty {
+  border-radius: 50%;
 }
 
 .photo.is-on {
@@ -980,13 +997,42 @@ input[type="range"]::-webkit-slider-thumb {
 .handle.sw::before { border-right: 0; border-top: 0; bottom: 0; left: 0; }
 .handle.se::before { border-left: 0; border-top: 0; bottom: 0; right: 0; }
 
+.app[data-style="halloween"] .handles::before {
+  inset: -8px;
+  border-radius: 50%;
+}
+
+.app[data-style="halloween"] .handle.nw { left: -6px; top: -6px; }
+.app[data-style="halloween"] .handle.ne { right: -6px; top: -6px; }
+.app[data-style="halloween"] .handle.sw { left: -6px; bottom: -6px; }
+.app[data-style="halloween"] .handle.se { right: -6px; bottom: -6px; }
+
 .photo.is-on .handle:hover::before,
-.photo.is-resizing .handle::before {
+.photo.is-resizing .handle::before,
+.photo-controls .handle:hover::before,
+.photo-controls.is-resizing .handle::before {
   border-color: var(--select);
 }
 
 .photo.is-resizing {
   cursor: nwse-resize;
+}
+
+.photo-controls {
+  position: absolute;
+  pointer-events: none;
+}
+
+.photo-controls .handles {
+  display: block;
+}
+
+.photo-controls.is-oval {
+  border-radius: 50%;
+}
+
+.photo-controls .handle {
+  pointer-events: auto;
 }
 
 .file-input {
@@ -1112,6 +1158,7 @@ body.is-dropping .drop-veil {
   .drop-veil,
   .ruler,
   .ruler-corner,
+  .sheet-controls,
   .handles,
   .photo-empty {
     display: none !important;

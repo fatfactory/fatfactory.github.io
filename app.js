@@ -16,6 +16,14 @@
       nameKey: "themeHalloween",
       background: "background/halloween.png",
       overlay: "overlay/halloween.png",
+      frameCount: 4,
+      photoShape: "oval",
+      frames: [
+        { x: 11.75, y: 22.5556, w: 36.25, h: 17.9444 },
+        { x: 51.1667, y: 22.5556, w: 36.25, h: 17.9444 },
+        { x: 11.75, y: 61.9444, w: 36.25, h: 17.9444 },
+        { x: 51.1667, y: 61.9444, w: 36.25, h: 17.9444 },
+      ],
     },
     {
       id: "lucky-cat",
@@ -29,9 +37,9 @@
     en: {
       title: "FAT Factory MeowMe Photo Resizer",
       description:
-        "Lay out nine photos on a portrait 4×6 inch print. Upload, move, and resize each image, then download a 300 DPI file ready for the lab.",
+        () => `Lay out ${activeFrameCount()} photos on a portrait 4×6 inch print. Upload, move, and resize each image, then download a 300 DPI file ready for the lab.`,
       brandTitle: "FAT Factory MeowMe Photo Resizer",
-      brandTagline: "Nine photos on a 4×6 portrait",
+      brandTagline: () => `${frameCountLabel()} photos on a 4×6 portrait`,
       print: "Print",
       download: "Download PNG",
       changeStyle: "Change style",
@@ -50,15 +58,15 @@
       themeTitleLight: "Light theme",
       themeTitleDark: "Dark theme",
       guideKicker: "User guide",
-      guideTitle: "Make a 4×6 nine-up print",
+      guideTitle: () => `Make a 4×6 ${frameUpLabel()} print`,
       guideLead:
-        "This page lays out nine photos on one portrait 4×6 inch sheet. Choose a print style first, then the frames stay locked in a 3×3 grid with no gaps. You only move and resize the picture inside each frame.",
+        () => `This page lays out ${activeFrameCount()} photos on one portrait 4×6 inch sheet. Choose a print style first, then the photo areas stay locked to the selected design. You only move and resize the picture inside each frame.`,
       guideStyleTitle: "1. Choose a style",
       guideStyle1: "Pick a print style. The background and oval frame change together.",
       guideStyle2: "Use Change style in the top bar to pick a different one.",
       guideAddTitle: "2. Add photos",
       guideAdd1: "Click an empty slot to choose one image.",
-      guideAdd2: "Drop up to nine files onto the print at once.",
+      guideAdd2: () => `Drop up to ${activeFrameCount()} files onto the print at once.`,
       guideMoveTitle: "3. Move a photo",
       guideMove1: "Click the photo you want to edit.",
       guideMove2: "Drag in any direction — left, right, up, or down.",
@@ -98,7 +106,7 @@
       readFail: "Could not read that image.",
       dropImages: "Drop image files to add them.",
       extraSkipped: (n) =>
-        `Added 9 photos. ${n} extra file${n > 1 ? "s" : ""} skipped.`,
+        `Added ${activeFrameCount()} photos. ${n} extra file${n > 1 ? "s" : ""} skipped.`,
       cloned: (n) => `Cloned into frame ${n}`,
       cloneFull: "No empty frame to clone into.",
       exportFail: "Could not export the print.",
@@ -109,9 +117,9 @@
     zh: {
       title: "FAT Factory MeowMe Photo Resizer",
       description:
-        "在直式 4×6 吋相紙上排版九張照片。上傳、移動並調整每張圖片大小，再下載 300 DPI 檔案，可直接送沖印。",
+        () => `在直式 4×6 吋相紙上排版${frameCountLabelZh()}張照片。上傳、移動並調整每張圖片大小，再下載 300 DPI 檔案，可直接送沖印。`,
       brandTitle: "FAT Factory MeowMe Photo Resizer",
-      brandTagline: "直式 4×6 4R照片",
+      brandTagline: () => `直式 4×6 4R${frameCountLabelZh()}張照片`,
       print: "列印",
       download: "下載 PNG",
       changeStyle: "更換款式",
@@ -130,15 +138,15 @@
       themeTitleLight: "淺色主題",
       themeTitleDark: "深色主題",
       guideKicker: "使用說明",
-      guideTitle: "製作 4x6 4R相片",
+      guideTitle: () => `製作 4x6 4R${frameLayoutLabelZh()}相片`,
       guideLead:
-        "本頁會把九張照片排在一張直式 4×6 吋 4R相紙上。請先選擇款式，外框固定為無縫 3×3 格，你只需移動並縮放每格裡的圖片。",
+        () => `本頁會把${frameCountLabelZh()}張照片排在一張直式 4×6 吋 4R相紙上。請先選擇款式，照片區域會依照所選設計固定位置，你只需移動並縮放每格裡的圖片。`,
       guideStyleTitle: "1. 選擇款式",
       guideStyle1: "選擇相片款式。背景與橢圓外框會一起更換。",
       guideStyle2: "之後可用頂端的「更換款式」改選其他款。",
       guideAddTitle: "2. 加入照片",
       guideAdd1: "點選空格來選擇一張圖片。",
-      guideAdd2: "一次可將最多九個檔案拖放到相紙上。",
+      guideAdd2: () => `一次可將最多${frameCountLabelZh()}個檔案拖放到相紙上。`,
       guideMoveTitle: "3. 移動照片",
       guideMove1: "點選要編輯的照片。",
       guideMove2: "可向左、右、上、下任意拖移。",
@@ -302,6 +310,7 @@
     styleGrid: document.getElementById("style-grid"),
     sheetBackground: document.querySelector(".sheet-background"),
     sheetOverlay: document.querySelector(".sheet-overlay"),
+    sheetControls: document.getElementById("sheet-controls"),
   };
 
   const state = {
@@ -342,6 +351,38 @@
 
   function findTheme(id) {
     return THEMES.find((theme) => theme.id === id) ?? null;
+  }
+
+  function activeTheme() {
+    return findTheme(state.styleId);
+  }
+
+  function activeFrameCount() {
+    return activeTheme()?.frameCount ?? COUNT;
+  }
+
+  function activePhotos() {
+    return state.photos.slice(0, activeFrameCount());
+  }
+
+  function activePhotoShape() {
+    return activeTheme()?.photoShape ?? "rect";
+  }
+
+  function frameCountLabel() {
+    return activeFrameCount() === 4 ? "Four" : "Nine";
+  }
+
+  function frameUpLabel() {
+    return activeFrameCount() === 4 ? "four-photo" : "nine-up";
+  }
+
+  function frameCountLabelZh() {
+    return activeFrameCount() === 4 ? "四" : "九";
+  }
+
+  function frameLayoutLabelZh() {
+    return activeFrameCount() === 4 ? "四格" : "九格";
   }
 
   function lastStyleId() {
@@ -445,12 +486,19 @@
     const theme = findTheme(id);
     if (!theme) return false;
     state.styleId = theme.id;
+    el.app.dataset.style = theme.id;
+    if (state.selectedId != null && state.selectedId >= activeFrameCount()) {
+      state.selectedId = null;
+    }
     try {
       localStorage.setItem(STYLE_KEY, theme.id);
     } catch {
       /* ignore */
     }
     await loadThemeBitmaps(theme);
+    applyGrid();
+    applyLang();
+    render();
     return true;
   }
 
@@ -494,6 +542,13 @@
   }
 
   function applyGrid() {
+    const frames = activeTheme()?.frames;
+    if (frames?.length) {
+      frames.forEach((frame, i) => {
+        Object.assign(state.photos[i], frame);
+      });
+      return;
+    }
     const cols = 3;
     const rows = 3;
     const margin = state.margin;
@@ -502,7 +557,7 @@
     const innerH = 100 - margin * 2;
     const cellW = (innerW - gap * (cols - 1)) / cols;
     const cellH = (innerH - gap * (rows - 1)) / rows;
-    state.photos.forEach((photo, i) => {
+    activePhotos().forEach((photo, i) => {
       const col = i % cols;
       const row = Math.floor(i / cols);
       photo.x = margin + col * (cellW + gap);
@@ -588,20 +643,23 @@
   }
 
   function selectPhoto(id) {
+    if (id == null || id < 0 || id >= activeFrameCount()) return;
     state.selectedId = id;
     el.sheet.querySelectorAll(".photo").forEach((node) => {
       node.classList.toggle("is-on", Number(node.dataset.id) === id);
     });
+    renderSheetControls();
     renderInspector();
     renderMeta();
   }
 
   function firstEmpty(from = 0) {
-    for (let i = 0; i < COUNT; i += 1) {
-      const id = (from + i) % COUNT;
+    const count = activeFrameCount();
+    for (let i = 0; i < count; i += 1) {
+      const id = (from + i) % count;
       if (!state.photos[id].src) return id;
     }
-    return from % COUNT;
+    return from % count;
   }
 
   function loadFileInto(id, file) {
@@ -643,14 +701,15 @@
       return;
     }
     let slot = startId;
-    for (const file of list.slice(0, COUNT)) {
+    const count = activeFrameCount();
+    for (const file of list.slice(0, count)) {
       const target = state.photos[slot].src ? firstEmpty(slot) : slot;
       await loadFileInto(target, file);
-      slot = (target + 1) % COUNT;
+      slot = (target + 1) % count;
     }
     render();
     selectPhoto(startId);
-    const extra = list.length - COUNT;
+    const extra = list.length - count;
     if (extra > 0) toast(t("extraSkipped", extra));
   }
 
@@ -760,32 +819,56 @@
   }
 
   function renderPhotos() {
-    const html = state.photos
+    const html = activePhotos()
       .map((photo) => {
         const on = photo.id === state.selectedId ? " is-on" : "";
         const empty = photo.src ? "" : " is-empty";
+        const shape = activePhotoShape() === "oval" ? " is-oval" : "";
         const media = photo.src
           ? `<div class="photo-media"><img alt="" draggable="false" /></div>
+          ${activePhotoShape() === "oval" ? "" : `
           <div class="handles">
             <i class="handle nw" data-dir="nw"></i>
             <i class="handle ne" data-dir="ne"></i>
             <i class="handle sw" data-dir="sw"></i>
             <i class="handle se" data-dir="se"></i>
-          </div>`
+          </div>`}`
           : `<div class="photo-empty"><div><strong>+</strong><span>${t("addPhoto")}</span></div></div>`;
-        return `<div class="photo${on}${empty}" data-id="${photo.id}" style="left:${photo.x}%;top:${photo.y}%;width:${photo.w}%;height:${photo.h}%;">
+        return `<div class="photo${on}${empty}${shape}" data-id="${photo.id}" style="left:${photo.x}%;top:${photo.y}%;width:${photo.w}%;height:${photo.h}%;">
           ${media}
         </div>`;
       })
       .join("");
     el.sheet.innerHTML = html;
+    renderSheetControls();
     layoutImages();
+  }
+
+  function renderSheetControls() {
+    if (!el.sheetControls) return;
+    if (activePhotoShape() !== "oval") {
+      el.sheetControls.innerHTML = "";
+      return;
+    }
+    const photo = selected();
+    if (!photo?.src) {
+      el.sheetControls.innerHTML = "";
+      return;
+    }
+    el.sheetControls.innerHTML = `<div class="photo-controls is-oval" data-id="${photo.id}" style="left:${photo.x}%;top:${photo.y}%;width:${photo.w}%;height:${photo.h}%;">
+      <div class="handles">
+        <i class="handle nw" data-dir="nw"></i>
+        <i class="handle ne" data-dir="ne"></i>
+        <i class="handle sw" data-dir="sw"></i>
+        <i class="handle se" data-dir="se"></i>
+      </div>
+    </div>`;
   }
 
   function layoutImages() {
     const rect = sheetRect();
     if (!rect.width) return;
-    state.photos.forEach((photo) => {
+    activePhotos().forEach((photo) => {
       if (!photo.src) return;
       const node = el.sheet.querySelector(`.photo[data-id="${photo.id}"] img`);
       if (!node) return;
@@ -837,8 +920,9 @@
     const rect = sheetRect();
     const x = ((clientX - rect.left) / rect.width) * 100;
     const y = ((clientY - rect.top) / rect.height) * 100;
-    for (let i = state.photos.length - 1; i >= 0; i -= 1) {
-      const photo = state.photos[i];
+    const photos = activePhotos();
+    for (let i = photos.length - 1; i >= 0; i -= 1) {
+      const photo = photos[i];
       if (
         x >= photo.x &&
         x <= photo.x + photo.w &&
@@ -882,6 +966,7 @@
       origZoom: photo.zoom,
     };
     node.classList.add("is-resizing");
+    el.sheetControls?.querySelector(".photo-controls")?.classList.add("is-resizing");
   }
 
   function onPointerMove(event) {
@@ -922,6 +1007,7 @@
     if (!drag) return;
     const node = el.sheet.querySelector(`.photo[data-id="${drag.id}"]`);
     node?.classList.remove("is-dragging", "is-resizing");
+    el.sheetControls?.querySelector(".photo-controls")?.classList.remove("is-resizing");
     drag = null;
     renderInspector();
     renderMeta();
@@ -938,7 +1024,11 @@
     if (!layout) return;
     ctx.save();
     ctx.beginPath();
-    ctx.rect(x, y, w, h);
+    if (activePhotoShape() === "oval") {
+      ctx.ellipse(x + w / 2, y + h / 2, w / 2, h / 2, 0, 0, Math.PI * 2);
+    } else {
+      ctx.rect(x, y, w, h);
+    }
     ctx.clip();
     ctx.drawImage(img, x + layout.left, y + layout.top, layout.width, layout.height);
     ctx.restore();
@@ -990,7 +1080,7 @@
       ctx.drawImage(themeBitmaps.bg, 0, 0, width, height);
     }
 
-    for (const photo of state.photos) {
+    for (const photo of activePhotos()) {
       const img = images.get(photo.id);
       if (!photo.src || !img?.complete) continue;
       const x = (photo.x / 100) * width;
@@ -1040,7 +1130,7 @@
         /* still blocked */
       }
     }
-    if (!state.photos.some((photo) => photo.src)) {
+    if (!activePhotos().some((photo) => photo.src)) {
       toast(t("exportFail"));
       return;
     }
@@ -1147,6 +1237,7 @@
       state.selectedId = null;
       renderInspector();
       renderMeta();
+      renderSheetControls();
       el.sheet.querySelectorAll(".photo").forEach((photoNode) => photoNode.classList.remove("is-on"));
       return;
     }
@@ -1178,6 +1269,20 @@
   el.sheet.addEventListener("pointermove", onPointerMove);
   el.sheet.addEventListener("pointerup", endDrag);
   el.sheet.addEventListener("pointercancel", endDrag);
+
+  el.sheetControls?.addEventListener("pointerdown", (event) => {
+    const handle = event.target.closest(".handle");
+    const node = event.target.closest(".photo-controls");
+    if (!handle || !node) return;
+    event.preventDefault();
+    const id = Number(node.dataset.id);
+    selectPhoto(id);
+    startResize(id, event);
+    el.sheetControls.setPointerCapture(event.pointerId);
+  });
+  el.sheetControls?.addEventListener("pointermove", onPointerMove);
+  el.sheetControls?.addEventListener("pointerup", endDrag);
+  el.sheetControls?.addEventListener("pointercancel", endDrag);
 
   el.sheet.addEventListener(
     "wheel",
@@ -1256,7 +1361,8 @@
       return;
     }
     if (event.key >= "1" && event.key <= "9") {
-      selectPhoto(Number(event.key) - 1);
+      const id = Number(event.key) - 1;
+      if (id < activeFrameCount()) selectPhoto(id);
       return;
     }
     if (event.key === "ArrowLeft") {
@@ -1312,6 +1418,7 @@
   new ResizeObserver(() => fitSheet()).observe(el.stage);
 
   state.styleId = lastStyleId();
+  if (state.styleId) el.app.dataset.style = state.styleId;
   applyTheme();
   applyLang();
   applyGrid();
