@@ -2,6 +2,28 @@
   const COUNT = 9;
   const LANG_KEY = "photoResize.lang";
   const THEME_KEY = "photoResize.theme";
+  const STYLE_KEY = "photoResize.style";
+
+  const THEMES = [
+    {
+      id: "meowme",
+      nameKey: "themeMeowme",
+      background: "background/background.png",
+      overlay: "overlay/overlay.png",
+    },
+    {
+      id: "halloween",
+      nameKey: "themeHalloween",
+      background: "background/halloween.png",
+      overlay: "overlay/halloween.png",
+    },
+    {
+      id: "lucky-cat",
+      nameKey: "themeLuckyCat",
+      background: "background/lucky-cat.png",
+      overlay: "overlay/lucky-cat.png",
+    },
+  ];
 
   const STRINGS = {
     en: {
@@ -12,6 +34,13 @@
       brandTagline: "Nine photos on a 4×6 portrait",
       print: "Print",
       download: "Download PNG",
+      changeStyle: "Change style",
+      chooseKicker: "Print style",
+      chooseTitle: "Choose a style",
+      chooseLead: "Pick a print style first. The background and oval frame change together.",
+      themeMeowme: "MeowMe",
+      themeHalloween: "Halloween",
+      themeLuckyCat: "Lucky cat",
       langToZh: "Switch to Traditional Chinese",
       langToEn: "Switch to English",
       langTitleZh: "繁體中文",
@@ -23,24 +52,28 @@
       guideKicker: "User guide",
       guideTitle: "Make a 4×6 nine-up print",
       guideLead:
-        "This page lays out nine photos on one portrait 4×6 inch sheet. The frames stay locked in a 3×3 grid with no gaps. You only move and resize the picture inside each frame.",
-      guideAddTitle: "1. Add photos",
+        "This page lays out nine photos on one portrait 4×6 inch sheet. Choose a print style first, then the frames stay locked in a 3×3 grid with no gaps. You only move and resize the picture inside each frame.",
+      guideStyleTitle: "1. Choose a style",
+      guideStyle1: "Pick a print style. The background and oval frame change together.",
+      guideStyle2: "Use Change style in the top bar to pick a different one.",
+      guideAddTitle: "2. Add photos",
       guideAdd1: "Click an empty slot to choose one image.",
       guideAdd2: "Drop up to nine files onto the print at once.",
-      guideMoveTitle: "2. Move a photo",
+      guideMoveTitle: "3. Move a photo",
       guideMove1: "Click the photo you want to edit.",
       guideMove2: "Drag in any direction — left, right, up, or down.",
       guideMove3: "The frame stays put; only the image inside it moves.",
-      guideResizeTitle: "3. Resize a photo",
+      guideResizeTitle: "4. Resize a photo",
       guideResize1: "Click a photo so crop brackets appear on its corners.",
       guideResize2: "Pull a corner to zoom that patch in or out.",
       guideResize3: "Scroll the mouse wheel over the photo to resize it.",
       guideResize4: "Use <strong>−</strong> / <strong>+</strong> when a photo is selected.",
-      guideReplaceTitle: "4. Replace or remove",
+      guideReplaceTitle: "5. Replace or remove",
       guideReplace1: "<strong>Replace</strong> swaps the selected photo.",
+      guideClone1: "<strong>Clone</strong> duplicates it into the next empty frame.",
       guideReplace2: "<strong>Clear</strong> or <kbd>Delete</kbd> empties that slot.",
       guideReplace3: "Double-click a photo to reset its crop.",
-      guideSaveTitle: "5. Save the print",
+      guideSaveTitle: "6. Save the print",
       guideSave1: "<strong>Download PNG</strong> saves a 4×6 file at 300 DPI (1200 × 1800 px) for a photo lab.",
       guideSave2: "<strong>Print</strong> sends the sheet to your printer at 4×6 inches.",
       guideKeysTitle: "Shortcuts",
@@ -53,6 +86,7 @@
       larger: "Larger",
       reset: "Reset",
       replace: "Replace",
+      clone: "Clone",
       clear: "Clear",
       statusIdle: "Click a photo to add or edit it · Drag to move · Pull a corner to resize",
       statusEdit: "Click a photo to edit it · Drag to move · Pull a corner to resize",
@@ -65,7 +99,10 @@
       dropImages: "Drop image files to add them.",
       extraSkipped: (n) =>
         `Added 9 photos. ${n} extra file${n > 1 ? "s" : ""} skipped.`,
+      cloned: (n) => `Cloned into frame ${n}`,
+      cloneFull: "No empty frame to clone into.",
       exportFail: "Could not export the print.",
+      exportNoFrame: "Saved photos only — the background and overlay could not be included.",
       savedPng: (w, h) => `Saved ${w} × ${h} px PNG`,
       printMeta: (w, h, dpi) => `${w} × ${h} in  ·  ${dpi} DPI  ·  ${w * dpi} × ${h * dpi} px`,
     },
@@ -77,6 +114,13 @@
       brandTagline: "直式 4×6 4R照片",
       print: "列印",
       download: "下載 PNG",
+      changeStyle: "更換款式",
+      chooseKicker: "相片款式",
+      chooseTitle: "選擇款式",
+      chooseLead: "請先選擇相片款式。背景與橢圓外框會一起更換。",
+      themeMeowme: "MeowMe",
+      themeHalloween: "萬聖節",
+      themeLuckyCat: "招財貓",
       langToZh: "切換為繁體中文",
       langToEn: "切換為英文",
       langTitleZh: "繁體中文",
@@ -88,24 +132,28 @@
       guideKicker: "使用說明",
       guideTitle: "製作 4x6 4R相片",
       guideLead:
-        "本頁會把九張照片排在一張直式 4×6 吋 4R相紙上。外框固定為無縫 3×3 格，你只需移動並縮放每格裡的圖片。",
-      guideAddTitle: "1. 加入照片",
+        "本頁會把九張照片排在一張直式 4×6 吋 4R相紙上。請先選擇款式，外框固定為無縫 3×3 格，你只需移動並縮放每格裡的圖片。",
+      guideStyleTitle: "1. 選擇款式",
+      guideStyle1: "選擇相片款式。背景與橢圓外框會一起更換。",
+      guideStyle2: "之後可用頂端的「更換款式」改選其他款。",
+      guideAddTitle: "2. 加入照片",
       guideAdd1: "點選空格來選擇一張圖片。",
       guideAdd2: "一次可將最多九個檔案拖放到相紙上。",
-      guideMoveTitle: "2. 移動照片",
+      guideMoveTitle: "3. 移動照片",
       guideMove1: "點選要編輯的照片。",
       guideMove2: "可向左、右、上、下任意拖移。",
       guideMove3: "外框不會動，只有格內圖片會移動。",
-      guideResizeTitle: "3. 調整照片大小",
+      guideResizeTitle: "4. 調整照片大小",
       guideResize1: "點選照片，角落會出現裁切框。",
       guideResize2: "拉動角落可放大或縮小該區塊。",
       guideResize3: "在照片上滾動滑鼠滾輪來縮放。",
       guideResize4: "選取照片後，可用<strong>−</strong> / <strong>+</strong>調整。",
-      guideReplaceTitle: "4. 更換或移除",
+      guideReplaceTitle: "5. 更換或移除",
       guideReplace1: "<strong>更換</strong>可替換目前選取的照片。",
+      guideClone1: "<strong>複製</strong>會把目前照片複製到下一個空格。",
       guideReplace2: "<strong>清除</strong>或按 <kbd>Delete</kbd> 可清空該格。",
       guideReplace3: "雙擊照片可重設裁切。",
-      guideSaveTitle: "5. 儲存相片",
+      guideSaveTitle: "6. 儲存相片",
       guideSave1: "<strong>下載 PNG</strong> 會存成 300 DPI（1200 × 1800 px）的 4×6 檔案，可送沖印店。",
       guideSave2: "<strong>列印</strong>會以 4×6 吋尺寸送到印表機。",
       guideKeysTitle: "快捷鍵",
@@ -118,6 +166,7 @@
       larger: "放大",
       reset: "重設",
       replace: "更換",
+      clone: "複製",
       clear: "清除",
       statusIdle: "點選照片以加入或編輯 · 拖移移動 · 拉角落縮放",
       statusEdit: "點選照片以編輯 · 拖移移動 · 拉角落縮放",
@@ -129,7 +178,10 @@
       readFail: "無法讀取該圖片。",
       dropImages: "請拖放圖片檔來加入。",
       extraSkipped: (n) => `已加入 9 張照片。另有 ${n} 個檔案已略過。`,
+      cloned: (n) => `已複製到第 ${n} 格`,
+      cloneFull: "沒有空格可複製。",
       exportFail: "無法匯出相紙。",
+      exportNoFrame: "已儲存照片，但無法加入背景與外框。",
       savedPng: (w, h) => `已儲存 ${w} × ${h} px PNG`,
       printMeta: (w, h, dpi) => `${w} × ${h} 吋  ·  ${dpi} DPI  ·  ${w * dpi} × ${h * dpi} px`,
     },
@@ -183,6 +235,7 @@
       btnLang.setAttribute("title", lang === "zh" ? t("langTitleEn") : t("langTitleZh"));
     }
     syncThemeButton();
+    renderChooser();
   }
 
   function setLang(next) {
@@ -234,6 +287,7 @@
   }
 
   const el = {
+    app: document.getElementById("app"),
     sheet: document.getElementById("sheet"),
     stage: document.getElementById("stage"),
     stageFrame: document.getElementById("stage-frame"),
@@ -245,6 +299,9 @@
     inputSingle: document.getElementById("input-single"),
     rulerH: document.getElementById("ruler-h"),
     rulerV: document.getElementById("ruler-v"),
+    styleGrid: document.getElementById("style-grid"),
+    sheetBackground: document.querySelector(".sheet-background"),
+    sheetOverlay: document.querySelector(".sheet-overlay"),
   };
 
   const state = {
@@ -252,23 +309,15 @@
     margin: 0,
     bg: "#fffcf7",
     selectedId: null,
+    styleId: null,
     dpi: 300,
     photos: Array.from({ length: COUNT }, (_, i) => emptyPhoto(i)),
   };
 
   const images = new Map();
-  const overlayImage = new Image();
-  const overlayReady = new Promise((resolve) => {
-    overlayImage.onload = () => resolve(true);
-    overlayImage.onerror = () => resolve(false);
-  });
-  overlayImage.src = "overlay/overlay.png";
-  const backgroundImage = new Image();
-  const backgroundReady = new Promise((resolve) => {
-    backgroundImage.onload = () => resolve(true);
-    backgroundImage.onerror = () => resolve(false);
-  });
-  backgroundImage.src = "background/background.png";
+  let themeBitmaps = { id: null, bg: null, overlay: null };
+  let themeObjectUrls = [];
+  let themeDataPromise = null;
   let uploadTarget = 0;
   let drag = null;
   let toastTimer = 0;
@@ -289,6 +338,151 @@
       nw: 0,
       nh: 0,
     };
+  }
+
+  function findTheme(id) {
+    return THEMES.find((theme) => theme.id === id) ?? null;
+  }
+
+  function lastStyleId() {
+    try {
+      const saved = localStorage.getItem(STYLE_KEY);
+      if (findTheme(saved)) return saved;
+    } catch {
+      /* ignore */
+    }
+    return null;
+  }
+
+  function isChoosing() {
+    return el.app.classList.contains("is-choosing");
+  }
+
+  function forgetThemeBitmaps() {
+    themeBitmaps.bg?.close?.();
+    themeBitmaps.overlay?.close?.();
+    themeBitmaps = { id: null, bg: null, overlay: null };
+    for (const url of themeObjectUrls) URL.revokeObjectURL(url);
+    themeObjectUrls = [];
+  }
+
+  function ensureThemeData() {
+    if (window.PHOTO_RESIZE_THEME_DATA) return Promise.resolve();
+    if (themeDataPromise) return themeDataPromise;
+    themeDataPromise = new Promise((resolve, reject) => {
+      const script = document.createElement("script");
+      script.src = "theme-data.js";
+      script.onload = resolve;
+      script.onerror = () => {
+        themeDataPromise = null;
+        reject(new Error("theme-data"));
+      };
+      document.head.appendChild(script);
+    });
+    return themeDataPromise;
+  }
+
+  async function bitmapFromBlob(blob) {
+    if (typeof createImageBitmap === "function") {
+      try {
+        return await createImageBitmap(blob);
+      } catch {
+        /* fall through */
+      }
+    }
+    const objectUrl = URL.createObjectURL(blob);
+    themeObjectUrls.push(objectUrl);
+    const img = new Image();
+    img.src = objectUrl;
+    if (img.decode) await img.decode();
+    else {
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = reject;
+      });
+    }
+    return img;
+  }
+
+  async function cleanAssetBlob(path) {
+    try {
+      const res = await fetch(path, { cache: "force-cache" });
+      if (res.ok) return res.blob();
+    } catch {
+      /* file:// and some previews block fetch */
+    }
+    await ensureThemeData();
+    const dataUrl = window.PHOTO_RESIZE_THEME_DATA?.[path];
+    if (!dataUrl) throw new Error("asset");
+    const res = await fetch(dataUrl);
+    return res.blob();
+  }
+
+  async function loadThemeBitmaps(theme) {
+    if (!theme) return themeBitmaps;
+    if (themeBitmaps.id === theme.id && themeBitmaps.bg && themeBitmaps.overlay) {
+      return themeBitmaps;
+    }
+    forgetThemeBitmaps();
+    const [bgBlob, overlayBlob] = await Promise.all([
+      cleanAssetBlob(theme.background),
+      cleanAssetBlob(theme.overlay),
+    ]);
+    const bgUrl = URL.createObjectURL(bgBlob);
+    const overlayUrl = URL.createObjectURL(overlayBlob);
+    themeObjectUrls.push(bgUrl, overlayUrl);
+    if (el.sheetBackground) el.sheetBackground.src = bgUrl;
+    if (el.sheetOverlay) el.sheetOverlay.src = overlayUrl;
+    const [bg, overlay] = await Promise.all([
+      bitmapFromBlob(bgBlob),
+      bitmapFromBlob(overlayBlob),
+    ]);
+    themeBitmaps = { id: theme.id, bg, overlay };
+    return themeBitmaps;
+  }
+
+  async function applyStyle(id) {
+    const theme = findTheme(id);
+    if (!theme) return false;
+    state.styleId = theme.id;
+    try {
+      localStorage.setItem(STYLE_KEY, theme.id);
+    } catch {
+      /* ignore */
+    }
+    await loadThemeBitmaps(theme);
+    return true;
+  }
+
+  function renderChooser() {
+    if (!el.styleGrid) return;
+    el.styleGrid.innerHTML = THEMES.map((theme) => {
+      const selected = theme.id === state.styleId;
+      return `<button type="button" class="style-card${selected ? " is-on" : ""}" data-id="${escapeAttr(theme.id)}" aria-pressed="${selected ? "true" : "false"}">
+        <span class="style-card-preview">
+          <img class="style-card-bg" src="${escapeAttr(theme.background)}" alt="" draggable="false" />
+          <img class="style-card-ov" src="${escapeAttr(theme.overlay)}" alt="" draggable="false" />
+        </span>
+        <span class="style-card-name">${escapeAttr(t(theme.nameKey))}</span>
+      </button>`;
+    }).join("");
+  }
+
+  function showChooser() {
+    el.app.classList.add("is-choosing");
+    renderChooser();
+    const card =
+      el.styleGrid.querySelector(".style-card.is-on") || el.styleGrid.querySelector(".style-card");
+    card?.focus();
+  }
+
+  async function enterEditor(id) {
+    if (!(await applyStyle(id))) return;
+    el.app.classList.remove("is-choosing");
+    requestAnimationFrame(() => {
+      fitSheet();
+      el.sheet.focus();
+    });
   }
 
   function canvasInches() {
@@ -466,6 +660,57 @@
     images.delete(id);
     const { x, y, w, h } = photo;
     Object.assign(photo, emptyPhoto(id), { x, y, w, h });
+  }
+
+  async function clonePhotoInto(fromId, toId) {
+    const from = state.photos[fromId];
+    if (!from?.src || fromId === toId) return false;
+    let url = from.src;
+    if (from.src.startsWith("blob:")) {
+      try {
+        const blob = await fetch(from.src).then((res) => res.blob());
+        url = URL.createObjectURL(blob);
+      } catch {
+        toast(t("readFail"));
+        return false;
+      }
+    }
+    const img = new Image();
+    const loaded = await new Promise((resolve) => {
+      img.onload = () => resolve(true);
+      img.onerror = () => resolve(false);
+      img.src = url;
+    });
+    if (!loaded) {
+      if (url.startsWith("blob:") && url !== from.src) URL.revokeObjectURL(url);
+      toast(t("readFail"));
+      return false;
+    }
+    const dest = state.photos[toId];
+    dest.src = url;
+    dest.name = from.name;
+    dest.nw = from.nw;
+    dest.nh = from.nh;
+    dest.zoom = from.zoom;
+    dest.panX = from.panX;
+    dest.panY = from.panY;
+    images.set(toId, img);
+    return true;
+  }
+
+  async function cloneSelectedPhoto() {
+    const photo = selected();
+    if (!photo?.src) return;
+    const target = firstEmpty(photo.id + 1);
+    if (state.photos[target].src) {
+      toast(t("cloneFull"));
+      return;
+    }
+    const ok = await clonePhotoInto(photo.id, target);
+    if (!ok) return;
+    render();
+    selectPhoto(target);
+    toast(t("cloned", target + 1));
   }
 
   function toast(message) {
@@ -729,13 +974,6 @@
     }, 2000);
   }
 
-  function readyAsset(img, selector) {
-    const el = document.querySelector(selector);
-    if (el instanceof HTMLImageElement && el.complete && el.naturalWidth) return el;
-    if (img.complete && img.naturalWidth) return img;
-    return null;
-  }
-
   function renderPrintCanvas(withChrome) {
     const { w: wIn, h: hIn } = canvasInches();
     const dpi = state.dpi;
@@ -748,9 +986,8 @@
     ctx.fillStyle = state.bg;
     ctx.fillRect(0, 0, width, height);
 
-    if (withChrome) {
-      const bg = readyAsset(backgroundImage, ".sheet-background");
-      if (bg) ctx.drawImage(bg, 0, 0, width, height);
+    if (withChrome && themeBitmaps.bg) {
+      ctx.drawImage(themeBitmaps.bg, 0, 0, width, height);
     }
 
     for (const photo of state.photos) {
@@ -763,31 +1000,56 @@
       drawCover(ctx, photo, img, x, y, w, h);
     }
 
-    if (withChrome) {
-      const overlay = readyAsset(overlayImage, ".sheet-overlay");
-      if (overlay) ctx.drawImage(overlay, 0, 0, width, height);
+    if (withChrome && themeBitmaps.overlay) {
+      ctx.drawImage(themeBitmaps.overlay, 0, 0, width, height);
     }
 
     return canvas;
   }
 
-  function downloadPNG() {
-    const filename = `meowMe-${fileStamp()}.png`;
-    let canvas = renderPrintCanvas(true);
-    let blob;
-    try {
-      blob = canvasPngBlob(canvas);
-    } catch {
-      canvas = renderPrintCanvas(false);
+  async function downloadPNG() {
+    const theme = findTheme(state.styleId);
+    if (theme) {
       try {
-        blob = canvasPngBlob(canvas);
+        await loadThemeBitmaps(theme);
       } catch {
-        toast(t("exportFail"));
-        return;
+        /* keep any assets we already have */
       }
     }
-    triggerDownload(blob, filename);
-    toast(t("savedPng", canvas.width, canvas.height));
+    const filename = `meowMe-${fileStamp()}.png`;
+    const trySave = (canvas) => {
+      const blob = canvasPngBlob(canvas);
+      triggerDownload(blob, filename);
+      return canvas;
+    };
+    try {
+      const canvas = trySave(renderPrintCanvas(true));
+      toast(t("savedPng", canvas.width, canvas.height));
+      return;
+    } catch {
+      /* canvas tainted or encode failed — reload frame as blobs and retry */
+    }
+    if (theme) {
+      forgetThemeBitmaps();
+      try {
+        await loadThemeBitmaps(theme);
+        const canvas = trySave(renderPrintCanvas(true));
+        toast(t("savedPng", canvas.width, canvas.height));
+        return;
+      } catch {
+        /* still blocked */
+      }
+    }
+    if (!state.photos.some((photo) => photo.src)) {
+      toast(t("exportFail"));
+      return;
+    }
+    try {
+      const canvas = trySave(renderPrintCanvas(false));
+      toast(t("exportNoFrame"));
+    } catch {
+      toast(t("exportFail"));
+    }
   }
 
   function escapeAttr(value) {
@@ -820,15 +1082,23 @@
   // Events
   document.getElementById("btn-download").addEventListener("click", (event) => {
     event.preventDefault();
-    try {
-      downloadPNG();
-    } catch {
-      toast(t("exportFail"));
-    }
+    if (isChoosing()) return;
+    downloadPNG().catch(() => toast(t("exportFail")));
   });
 
   document.getElementById("btn-print").addEventListener("click", () => {
+    if (isChoosing()) return;
     window.print();
+  });
+
+  document.getElementById("btn-change-style").addEventListener("click", () => {
+    showChooser();
+  });
+
+  el.styleGrid.addEventListener("click", (event) => {
+    const card = event.target.closest(".style-card");
+    if (!card) return;
+    enterEditor(card.dataset.id);
   });
 
   document.getElementById("btn-lang").addEventListener("click", () => {
@@ -837,6 +1107,10 @@
 
   document.getElementById("btn-theme").addEventListener("click", () => {
     setTheme(theme === "light" ? "dark" : "light");
+  });
+
+  document.getElementById("btn-clone").addEventListener("click", () => {
+    cloneSelectedPhoto();
   });
 
   document.getElementById("btn-replace").addEventListener("click", () => {
@@ -963,14 +1237,11 @@
     const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(event.target.tagName);
     if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "s") {
       event.preventDefault();
-      try {
-        downloadPNG();
-      } catch {
-        toast(t("exportFail"));
-      }
+      if (isChoosing()) return;
+      downloadPNG().catch(() => toast(t("exportFail")));
       return;
     }
-    if (typing) return;
+    if (typing || isChoosing()) return;
     if (event.key === "Escape") {
       state.selectedId = null;
       render();
@@ -1006,6 +1277,7 @@
   ["dragenter", "dragover"].forEach((type) => {
     window.addEventListener(type, (event) => {
       event.preventDefault();
+      if (isChoosing()) return;
       if ([...event.dataTransfer.types].includes("Files")) {
         document.body.classList.add("is-dropping");
         el.dropVeil.hidden = false;
@@ -1023,6 +1295,7 @@
     event.preventDefault();
     document.body.classList.remove("is-dropping");
     el.dropVeil.hidden = true;
+    if (isChoosing()) return;
     const files = event.dataTransfer?.files;
     if (!files?.length) return;
     const over = hitPhoto(event.clientX, event.clientY);
@@ -1038,6 +1311,7 @@
 
   new ResizeObserver(() => fitSheet()).observe(el.stage);
 
+  state.styleId = lastStyleId();
   applyTheme();
   applyLang();
   applyGrid();

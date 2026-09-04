@@ -27,7 +27,7 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body class="is-portrait">
-    <div class="app">
+    <div class="app is-choosing" id="app">
       <header class="topbar">
         <div class="brand">
           <!-- <span class="brand-mark" aria-hidden="true"></span> -->
@@ -40,6 +40,9 @@
         <div class="topbar-meta" id="print-meta" aria-live="polite"></div>
 
         <div class="topbar-actions">
+          <button type="button" class="btn ghost" id="btn-change-style" data-i18n="changeStyle">
+            Change style
+          </button>
           <button type="button" class="btn ghost" id="btn-print" data-i18n="print">Print</button>
           <button type="button" class="btn primary" id="btn-download" data-i18n="download">
             Download PNG
@@ -77,12 +80,21 @@
           <h2 data-i18n="guideTitle">Make a 4×6 nine-up print</h2>
           <p class="guide-lead" data-i18n="guideLead">
             This page lays out nine photos on one portrait 4×6 inch sheet.
-            The frames stay locked in a 3×3 grid with no gaps. You only move
-            and resize the picture inside each frame.
+            Choose a print style first, then the frames stay locked in a 3×3
+            grid with no gaps. You only move and resize the picture inside
+            each frame.
           </p>
 
           <section>
-            <h3 data-i18n="guideAddTitle">1. Add photos</h3>
+            <h3 data-i18n="guideStyleTitle">1. Choose a style</h3>
+            <ul>
+              <li data-i18n="guideStyle1">Pick a print style. The background and oval frame change together.</li>
+              <li data-i18n="guideStyle2">Use Change style in the top bar to pick a different one.</li>
+            </ul>
+          </section>
+
+          <section>
+            <h3 data-i18n="guideAddTitle">2. Add photos</h3>
             <ul>
               <li data-i18n="guideAdd1">Click an empty slot to choose one image.</li>
               <li data-i18n="guideAdd2">Drop up to nine files onto the print at once.</li>
@@ -90,7 +102,7 @@
           </section>
 
           <section>
-            <h3 data-i18n="guideMoveTitle">2. Move a photo</h3>
+            <h3 data-i18n="guideMoveTitle">3. Move a photo</h3>
             <ul>
               <li data-i18n="guideMove1">Click the photo you want to edit.</li>
               <li data-i18n="guideMove2">Drag in any direction — left, right, up, or down.</li>
@@ -99,7 +111,7 @@
           </section>
 
           <section>
-            <h3 data-i18n="guideResizeTitle">3. Resize a photo</h3>
+            <h3 data-i18n="guideResizeTitle">4. Resize a photo</h3>
             <ul>
               <li data-i18n="guideResize1">Click a photo so crop brackets appear on its corners.</li>
               <li data-i18n="guideResize2">Pull a corner to zoom that patch in or out.</li>
@@ -109,16 +121,17 @@
           </section>
 
           <section>
-            <h3 data-i18n="guideReplaceTitle">4. Replace or remove</h3>
+            <h3 data-i18n="guideReplaceTitle">5. Replace or remove</h3>
             <ul>
               <li data-i18n-html="guideReplace1"><strong>Replace</strong> swaps the selected photo.</li>
+              <li data-i18n-html="guideClone1"><strong>Clone</strong> duplicates it into the next empty frame.</li>
               <li data-i18n-html="guideReplace2"><strong>Clear</strong> or <kbd>Delete</kbd> empties that slot.</li>
               <li data-i18n="guideReplace3">Double-click a photo to reset its crop.</li>
             </ul>
           </section>
 
           <section>
-            <h3 data-i18n="guideSaveTitle">5. Save the print</h3>
+            <h3 data-i18n="guideSaveTitle">6. Save the print</h3>
             <ul>
               <li data-i18n-html="guideSave1"><strong>Download PNG</strong> saves a 4×6 file at 300 DPI (1200 × 1800 px) for a photo lab.</li>
               <li data-i18n-html="guideSave2"><strong>Print</strong> sends the sheet to your printer at 4×6 inches.</li>
@@ -138,6 +151,16 @@
       </aside>
 
       <main class="workspace">
+        <div class="style-chooser" id="style-chooser">
+          <div class="style-chooser-inner">
+            <p class="guide-kicker" data-i18n="chooseKicker">Print style</p>
+            <h2 data-i18n="chooseTitle">Choose a style</h2>
+            <p class="style-chooser-lead" data-i18n="chooseLead">
+              Pick a print style first. The background and oval frame change together.
+            </p>
+            <div class="style-grid" id="style-grid"></div>
+          </div>
+        </div>
         <div class="stage" id="stage">
           <div class="stage-frame" id="stage-frame">
             <div class="ruler-corner" aria-hidden="true"></div>
@@ -146,7 +169,6 @@
             <div class="sheet-wrap">
               <img
                 class="sheet-background"
-                src="background/background.png"
                 alt=""
                 aria-hidden="true"
                 draggable="false"
@@ -155,12 +177,12 @@
                 class="sheet portrait"
                 id="sheet"
                 role="application"
+                tabindex="-1"
                 data-i18n-aria="sheetAria"
                 aria-label="4 by 6 inch portrait print canvas"
               ></div>
               <img
                 class="sheet-overlay"
-                src="overlay/overlay.png"
                 alt=""
                 aria-hidden="true"
                 draggable="false"
@@ -173,6 +195,7 @@
             <button type="button" class="btn ghost grow" id="btn-zoom-out" data-i18n-aria="smaller" aria-label="Smaller">−</button>
             <button type="button" class="btn ghost grow" id="btn-zoom-in" data-i18n-aria="larger" aria-label="Larger">+</button>
             <button type="button" class="btn ghost grow" id="btn-reset-crop" data-i18n="reset">Reset</button>
+            <button type="button" class="btn ghost grow" id="btn-clone" data-i18n="clone">Clone</button>
             <button type="button" class="btn ghost grow" id="btn-replace" data-i18n="replace">Replace</button>
             <button type="button" class="btn ghost grow" id="btn-clear" data-i18n="clear">Clear</button>
           </div>

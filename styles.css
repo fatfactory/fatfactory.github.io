@@ -622,6 +622,113 @@ input[type="range"]::-webkit-slider-thumb {
     var(--workspace-bg);
 }
 
+.app.is-choosing .workspace {
+  grid-template-rows: minmax(0, 1fr);
+}
+
+.app.is-choosing .stage,
+.app.is-choosing .photo-tools,
+.app.is-choosing .status,
+.app.is-choosing #btn-print,
+.app.is-choosing #btn-download,
+.app.is-choosing #btn-change-style {
+  display: none !important;
+}
+
+.app:not(.is-choosing) .style-chooser {
+  display: none;
+}
+
+.style-chooser {
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  display: grid;
+  place-items: center;
+  padding: 28px 24px;
+}
+
+.style-chooser-inner {
+  width: min(720px, 100%);
+}
+
+.style-chooser h2 {
+  font-family: var(--serif);
+  font-size: 28px;
+  font-weight: 560;
+  letter-spacing: -0.03em;
+  line-height: 1.2;
+  margin-bottom: 10px;
+}
+
+.style-chooser-lead {
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.6;
+  margin-bottom: 22px;
+}
+
+.style-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(148px, 168px));
+  gap: 16px;
+  justify-content: start;
+}
+
+.style-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 8px;
+  border: 1px solid var(--line-strong);
+  background: var(--bg-elev);
+  border-radius: 12px;
+  cursor: pointer;
+  text-align: center;
+  color: inherit;
+  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+}
+
+.style-card:hover {
+  background: var(--bg-elev-2);
+}
+
+.style-card.is-on,
+.style-card:focus-visible {
+  border-color: var(--select);
+  box-shadow: 0 0 0 3px var(--select-glow);
+}
+
+.style-card-preview {
+  position: relative;
+  aspect-ratio: 4 / 6;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--paper);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
+}
+
+.style-card-preview img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  pointer-events: none;
+  user-select: none;
+}
+
+.style-card-ov {
+  z-index: 1;
+}
+
+.style-card-name {
+  font-size: 14px;
+  font-weight: 600;
+  padding: 0 4px 4px;
+}
+
 .stage {
   min-width: 0;
   min-height: 0;
@@ -726,6 +833,10 @@ input[type="range"]::-webkit-slider-thumb {
   min-width: 0;
   z-index: 1;
   pointer-events: auto;
+}
+
+.sheet:focus {
+  outline: none;
 }
 
 .sheet-background,
@@ -996,6 +1107,7 @@ body.is-dropping .drop-veil {
   .sidebar,
   .status,
   .photo-tools,
+  .style-chooser,
   .toast,
   .drop-veil,
   .ruler,
