@@ -613,18 +613,22 @@
   function imageLayout(photo, frameW, frameH) {
     if (!photo.src || !photo.nw || !photo.nh) return null;
     const rotation = (((photo.rotation || 0) % 360) + 360) % 360;
-    const turnsSideways = rotation === 90 || rotation === 270;
-    const coverW = turnsSideways ? photo.nh : photo.nw;
-    const coverH = turnsSideways ? photo.nw : photo.nh;
+    const radians = (rotation * Math.PI) / 180;
+    const cos = Math.abs(Math.cos(radians));
+    const sin = Math.abs(Math.sin(radians));
+    const coverW = photo.nw * cos + photo.nh * sin;
+    const coverH = photo.nw * sin + photo.nh * cos;
     const scale = Math.max(frameW / coverW, frameH / coverH) * photo.zoom;
     const imageW = photo.nw * scale;
     const imageH = photo.nh * scale;
     const boxW = coverW * scale;
     const boxH = coverH * scale;
-    const maxPanX = Math.max(0, boxW - frameW);
-    const maxPanY = Math.max(0, boxH - frameH);
-    const boxLeft = maxPanX ? -clamp(photo.panX, 0, 1) * maxPanX : (frameW - boxW) / 2;
-    const boxTop = maxPanY ? -clamp(photo.panY, 0, 1) * maxPanY : (frameH - boxH) / 2;
+    const maxPanX = Math.abs(boxW - frameW);
+    const maxPanY = Math.abs(boxH - frameH);
+    const panX = clamp(photo.panX, 0, 1);
+    const panY = clamp(photo.panY, 0, 1);
+    const boxLeft = boxW > frameW ? -panX * maxPanX : panX * maxPanX;
+    const boxTop = boxH > frameH ? -panY * maxPanY : panY * maxPanY;
     return {
       width: imageW,
       height: imageH,
@@ -635,33 +639,30 @@
       boxLeft,
       boxTop,
       rotation,
+      overflowX: boxW > frameW,
+      overflowY: boxH > frameH,
       maxPanX,
       maxPanY,
     };
   }
 
   function setPanFromOffset(photo, layout, left, top) {
-    photo.panX = layout.maxPanX > 0.5 ? clamp(-left / layout.maxPanX, 0, 1) : 0.5;
-    photo.panY = layout.maxPanY > 0.5 ? clamp(-top / layout.maxPanY, 0, 1) : 0.5;
+    photo.panX = layout.maxPanX > 0.5
+      ? clamp((layout.overflowX ? -left : left) / layout.maxPanX, 0, 1)
+      : 0.5;
+    photo.panY = layout.maxPanY > 0.5
+      ? clamp((layout.overflowY ? -top : top) / layout.maxPanY, 0, 1)
+      : 0.5;
   }
 
   function ensureTwoAxisPan(photo) {
-    const { w, h } = frameSize(photo);
-    if (!w || !h) return;
-    const rotation = (((photo.rotation || 0) % 360) + 360) % 360;
-    const turnsSideways = rotation === 90 || rotation === 270;
-    const coverW = turnsSideways ? photo.nh : photo.nw;
-    const coverH = turnsSideways ? photo.nw : photo.nh;
-    const cover = Math.max(w / coverW, h / coverH);
-    const room = 40;
-    const need = Math.max((w + room) / (coverW * cover), (h + room) / (coverH * cover), 1);
-    if (photo.zoom < need) photo.zoom = need;
+    if (!photo?.src) return;
   }
 
   function setZoom(photo, nextZoom, focus) {
     const { w: frameW, h: frameH } = frameSize(photo);
     const prev = imageLayout(photo, frameW, frameH);
-    nextZoom = clamp(nextZoom, 1, 4);
+    nextZoom = Number.isFinite(nextZoom) ? Math.max(0.05, nextZoom) : photo.zoom;
     if (!prev) {
       photo.zoom = nextZoom;
       return;
@@ -1248,7 +1249,7 @@
     const layout = imageLayout(photo, frameW, frameH);
     if (!layout) return;
     const step = fine ? 8 : 24;
-    setPanFromOffset(photo, layout, layout.left - dx * step, layout.top - dy * step);
+    setPanFromOffset(photo, layout, layout.boxLeft - dx * step, layout.boxTop - dy * step);
     layoutImages();
     renderInspector();
   }
